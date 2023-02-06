@@ -1,6 +1,7 @@
 package ru.netology.statsview.ui
 
 import android.animation.Animator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
@@ -9,6 +10,7 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.core.content.withStyledAttributes
 import ru.netology.statsview.R
 import ru.netology.statsview.utils.AndroidUtils
@@ -113,11 +115,13 @@ class StatsView @JvmOverloads constructor(
 
         var startAngle = -90F
 
+        val rotation = fullCircleDegrees * move
+
         canvas.drawArc(oval, startAngle, fullCircleDegrees, false, paintEmpty)
         data.forEachIndexed { index, datum ->
              val angle = (datum / data.maxOrNull()!!.times(data.count())) * fullCircleDegrees
             paint.color = colors.getOrElse(index) { randomColor() }
-            canvas.drawArc(oval, startAngle, angle, false, paint)
+            canvas.drawArc(oval, startAngle+ rotation, angle * move , false, paint)
             startAngle += angle
         }
 
@@ -129,13 +133,28 @@ class StatsView @JvmOverloads constructor(
             center.y + textPaint.textSize / 4,
             textPaint
         )
+
         if (text == 100F) {
             paint.color = colors[0]
-            canvas.drawArc(oval, startAngle, 1F, false, paint)
+            canvas.drawArc(oval, startAngle + rotation, 1F, false, paint)
         }
     }
 
     private fun randomColor() = Random.nextInt(0xFF000000.toInt(), 0xFFFFFFFF.toInt())
-
+    private fun reInvalidate() {
+        animator?.apply {
+            cancel()
+            removeAllListeners()
+        }
+        animator = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener {
+                interpolator = LinearInterpolator()
+                duration = 2000
+                move = it.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
+    }
 
 }
