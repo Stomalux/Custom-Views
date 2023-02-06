@@ -1,5 +1,6 @@
 package ru.netology.statsview.ui
 
+import android.animation.Animator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
@@ -50,11 +51,18 @@ class StatsView @JvmOverloads constructor(
         set(value) {
             field = value
             invalidate()
+            reInvalidate()
         }
     private var fullCircleDegrees = 360F
     private var radius = 0F
     private var center = PointF()
     private var oval = RectF()
+    private var animator: Animator? = null
+    private var move = 0F
+
+
+
+
 
     private val paint = Paint(
         Paint.ANTI_ALIAS_FLAG
